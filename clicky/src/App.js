@@ -1,108 +1,62 @@
-import React, { Component } from 'react';
-import Navbar from "./components/Navbar";
+import React, { Component } from "react";
+import Card from "./components/Card";
+import Wrapper from "./components/Wrapper";
 import Header from "./components/Header";
-import Main from "./components/Main";
-import Footer from "./components/Footer";
-import Image from "./components/Image";
-import Img from "./components/Img.json"
-import crownbaby from "./images/crownbaby.jpeg"
-import beigebaby from "./images/beigebaby.jpeg"
-import featherbaby from "./images/featherbaby.jpeg"
-import lacebaby from "./images/lacebaby.jpeg"
-import moanababy from "./images/moanababy.jpeg"
-import netbaby from "./images/netbaby.jpeg"
-import pinkbaby from "./images/pinkbaby.jpeg"
-import tubbaby from "./images/tubbaby.jpeg"
-import purplebaby from "./images/purplebaby.jpeg"
-import sleepingbaby from "./images/sleepingbaby.jpeg"
-import angelbaby from "./images/angelbaby.jpeg"
-import hatbaby from "./images/hatbaby.jpeg"
-
-import './App.css';
+import cards from "./cards.json";
+import "./App.css";
 
 class App extends Component {
+  // Setting this.state.cards to the cards json array
   state = {
-    picked: [],
-    correct: 0,
-    topscore: 0,
-    message: 'Click an image to begin'
+    cards,
+    score: 0,
+    highscore: 0
   };
 
-  
-  shuffleArray = (array) => {
-    let imgArray = Img;
-    for (let i = imgArray.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1));
-      [imgArray[i], imgArray[j]] = [imgArray[j], imgArray[i]];
+  gameOver = () => {
+    if (this.state.score > this.state.highscore) {
+      this.setState({highscore: this.state.score}, function() {
+        console.log(this.state.highscore);
+      });
     }
-    return imgArray
+    this.state.cards.forEach(card => {
+      card.count = 0;
+    });
+    alert(`Game Over :( \nscore: ${this.state.score}`);
+    this.setState({score: 0});
+    return true;
   }
 
-  pickImg = (name) => {
-    console.log("Clicked!!");
-    let picked = this.state.picked;
-    
-    if (picked.indexOf(name) === -1) {
-      this.setState({
-        picked: picked.concat(name),
-        correct: this.state.correct + 1,
-        topscore: this.state.correct + 1 > this.state.topscore ? this.state.correct + 1 : this.state.topscore,
-        message: "Correct: Good choice!" 
-      })
-      this.shuffleArray();
-    }
-    else {
-      this.setState({
-        message: "Incorrect: Play again?",
-        correct: 0,
-        picked: []
-      })
-    }
+  clickCount = id => {
+    this.state.cards.find((o, i) => {
+      if (o.id === id) {
+        if(cards[i].count === 0){
+          cards[i].count = cards[i].count + 1;
+          this.setState({score : this.state.score + 1}, function(){
+            console.log(this.state.score);
+          });
+          this.state.cards.sort(() => Math.random() - 0.5)
+          return true; 
+        } else {
+          this.gameOver();
+        }
+      }
+    });
   }
-
-  imgSwitch = (name) => {
-    switch (name) {
-      case "crownbaby":
-        return `${crownbaby}`
-      case "beigebaby":
-        return `${beigebaby}`
-      case "featherbaby":
-        return `${featherbaby}`
-      case "lacebaby":
-        return `${lacebaby}`
-      case "moanababy":
-        return `${moanababy}`
-      case "netbaby":
-        return `${netbaby}`
-      case "pinkbaby":
-        return `${pinkbaby}`
-      case "tubbaby":
-        return `${tubbaby}`
-      case "purplebaby":
-        return `${purplebaby}`
-      case "sleepingbaby":
-        return `${sleepingbaby}`
-      case "angelbaby":
-        return `${angelbaby}`
-      case "hatbaby":
-        return `${hatbaby}`
-      default:
-        return `${crownbaby}`
-    }
-  }
-
+  // Map over this.state.cards and render a cardCard component for each card object
   render() {
     return (
-      <div>
-        <Navbar correct={this.state.correct} topscore={this.state.topscore} message={this.state.message}/>
-        <Header />
-        <Main>
-          {this.shuffleArray(Img).map(image => (
-            <Image src={this.imgSwitch(image.name)} name={image.name} key={image.name} pickImg={this.pickImg}  />
-          ))}
-        </Main>
-        <Footer />
-      </div>
+      <Wrapper>
+        <Header score={this.state.score} highscore={this.state.highscore}>Clicky Game</Header>
+        {this.state.cards.map(card => (
+          <Card
+            clickCount={this.clickCount}
+            id={card.id}
+            key={card.id}
+            image={card.image}
+          />
+        ))}
+      </Wrapper>
     );
   }
 }
